@@ -1,0 +1,93 @@
+##############
+# BUILDER #
+##############
+
+
+# pull official base image
+FROM python:3.11.4-slim-buster as builder
+
+# Set work directory
+WORKDIR /usr/src/app
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install system dependencies обновляют кеш пакетов и устанавливают gcc - компилятор для языка C и C++.
+# Это может понадобиться для установки зависимостей Python, которые требуют компиляции.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc
+
+# Копируют все файлы приложения в рабочий каталог контейнера
+COPY . /usr/src/app/
+
+
+# install python dependencies
+# Создает "колеса" (wheel) для зависимостей Python и сохраняет их в каталоге /usr/src/app/wheels.
+# Wheel - это бинарный формат для пакетов Python, что может ускорить установку зависимостей.
+COPY ./requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+
+
+#########
+# FINAL #
+#########
+
+# pull official base image
+FROM python:3.11.4-slim-buster
+
+
+# create directory for the app user
+RUN mkdir -p /home/app/
+
+
+# create the app user
+# Создает пользователя и группу с именем app, которые будут использоваться для запуска приложения в контейнере.
+RUN addgroup --system app && adduser --system --group app
+
+
+# create the appropriate directories
+ENV HOME=/home/app
+ENV APP_HOME=/home/app/web
+RUN mkdir $APP_HOME
+RUN mkdir $APP_HOME/staticfiles
+RUN mkdir $APP_HOME/mediafiles
+WORKDIR $APP_HOME
+
+
+# install dependencies
+# Устанавливает netcat, утилиту для работы с сетевыми соединениями.
+RUN apt-get update && apt-get install -y --no-install-recommends netcat
+# Копирует "колеса" и файл requirements.txt из временного образа builder в конечный образ.
+COPY --from=builder /usr/src/app/wheels /wheels
+COPY --from=builder /usr/src/app/requirements.txt .
+
+# Обновляет pip и устанавливает зависимости из "колес" (бинарных пакетов), что ускоряет установку зависимостей.
+RUN pip install --upgrade pip
+RUN pip install --no-cache /wheels/*
+
+
+# copy entrypoint.sh
+# Копирование скрипта entrypoint.sh, удаление символов \r из скрипта (если есть) и
+# установка прав на выполнение скрипта.
+COPY ./entrypoint.sh .
+RUN sed -i "s/\r$//g" $APP_HOME/entrypoint.sh
+RUN chmod +x $APP_HOME/entrypoint.sh
+
+
+# copy project
+COPY . $APP_HOME
+
+
+# chown all the files to the app user
+# Установка владельца и группы для всех файлов в каталоге приложения на пользователя app.
+RUN chown -R app:app $APP_HOME
+
+
+# change to the app user
+# Установка пользователя app как пользователя по умолчанию для выполнения команд в контейнере.
+USER app
+
+
+# run entrypoint.sh
+ENTRYPOINT ["/home/app/web/entrypoint.sh"]
