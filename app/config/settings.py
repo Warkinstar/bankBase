@@ -219,7 +219,11 @@ CORS_ALLOWED_ORIGINS = (
     "http://localhost:8000",
 )
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]  # react
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:1337",
+    "http://127.0.0.1:1337",
+]  # react and nginx
 
 # drf-spectacular
 SPECTACULAR_SETTINGS = {
