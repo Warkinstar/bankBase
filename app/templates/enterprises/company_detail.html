@@ -33,7 +33,27 @@
             {% if company.image %}
               <img src="{{ company.image.url }}" class="rounded float-start img-fluid img-thumbnail me-3" alt="{{ company.name }} image" width="200" height="200">
             {% endif %}
-              <p class="card-text">{{ company.description }}</p>
+
+              <p class="card-text">
+                {{ company.description }}
+              </p>
+
+            </div>
+              <div class="card-footer bg-transparent">
+                <div class="row">
+                  <div class="col-md-6">
+                    <p><strong>Председатель правления:</strong> {{ company.chairman_of_board }}</p>
+                    <p><strong>Председатель совета директоров:</strong> {{ company.chairman_of_management_board }}</p>
+                    <p><strong>Совет директоров:</strong> {{ company.board_of_directors }}</p>
+                    <p><strong>Члены правления:</strong> {{ company.members_of_management_board }}</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p><strong>Главный бухгалтер:</strong> {{ company.chief_accountant }}</p>
+                    <p><strong>Кастодиан:</strong> {{ company.custodian_license }}</p>
+                    <p><strong>Брокеры-дилеры:</strong> {{ company.broker_license }}</p>
+                    <p><strong>Холдинги:</strong> {% for holding in company.holdings.all %}<a href="{{ holding.get_absolute_url }}">{{ holding }}, </a>{% empty %}-{% endfor %}
+                  </div>
+                </div>
             </div>
         </div>
 
@@ -206,6 +226,7 @@
               <li class="list-group-item"><strong>Тип бизнеса:</strong> {{ company.business_type }}</li>
               <li class="list-group-item"><strong>Адрес:</strong> {{ company.address }}</li>
               <li class="list-group-item"><strong>Телефон:</strong> {{ company.phone_number }}</li>
+              <li class="list-group-item"><strong>Факс:</strong> {{ company.fax }}</li>
               <li class="list-group-item"><strong>Email:</strong> {{ company.email }}</li>
               {% if company.website %}
                 <li class="list-group-item"><strong>Веб-сайт:</strong> <a href="{{ company.website }}" target="_blank">{{ company.website }}</a></li>
@@ -222,7 +243,7 @@
                 <i class="bi bi-building-gear"></i> Редактировать
               </a>
               <a href="{% url 'employee_new' company.slug %}" class="btn btn-sm bg-info" >
-                <i class="bi bi-person-fill-add"></i> Работники
+                <i class="bi bi-person-fill-add"></i> Сотрудники
               </a>
               <a href="{% url 'financials_new' company.slug %}" class="btn btn-success btn-sm">
                 <i class="bi bi-currency-exchange"></i> Финансы

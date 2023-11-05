@@ -6,9 +6,12 @@ from phonenumber_field.widgets import PhoneNumberPrefixWidget
 class CompanyForm(forms.ModelForm):
     class Meta:
         model = Company
-        exclude = ["slug", "user"]
+        exclude = ["slug", "user", "curators", "holdings"]
         widgets = {"phone_number": PhoneNumberPrefixWidget(initial="KZ"),
-                   "description": forms.Textarea(attrs={'rows': 3, 'style': 'height: 50px;'})
+                   "fax": PhoneNumberPrefixWidget(initial="KZ"),
+                   "board_of_directors": forms.Textarea(attrs={'rows': 3, 'style': 'height: 50px;'}),
+                   "members_of_management_board": forms.Textarea(attrs={'rows': 3, 'style': 'height: 50px;'}),
+                   "description": forms.Textarea(attrs={'rows': 3, 'style': 'height: 50px;'}),
                    }
 
 

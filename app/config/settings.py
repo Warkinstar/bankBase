@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "enterprises.apps.EnterprisesConfig",
     "pages.apps.PagesConfig",
-    "products.apps.ProductsConfig",
     "apis.apps.ApisConfig",
     # 3rd party
     "phonenumber_field",

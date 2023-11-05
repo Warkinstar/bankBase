@@ -50,17 +50,54 @@ class BusinessType(BaseModel):
 class Company(BaseModel):
     """Модель для хранения информации о компании"""
 
+    # Название и форма собственности
     name = models.CharField(
         "Название компании",
         max_length=200,
         unique=True,
         help_text="Название бизнеса должно быть уникальным и не использоваться другими компаниями в вашей юрисдикции.",
     )
+    slug = models.SlugField(max_length=200, unique=True, blank=True)
+
+
+    ownership_type = models.ForeignKey(
+        OwnershipType,
+        on_delete=models.PROTECT,
+        related_name="companies",
+        verbose_name="Форма собственности",
+        help_text="Выберите форму собственности, которой принадлежит компания.",
+    )
+    description = models.TextField(
+        "Описание деятельности", blank=True, help_text="Необязательно."
+    )
 
     # user
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name="companies", on_delete=models.PROTECT
     )
+
+    # curators
+    curators = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="banks",
+        null=True,
+        blank=True,
+        verbose_name="Кураторы",
+    )
+
+    # ПРАВЛЕНИЕ
+
+    chairman_of_board = models.CharField("Председатель правления", max_length=100)
+
+    chairman_of_management_board = models.CharField(
+        "Председатель совета директоров", max_length=100
+    )
+
+    board_of_directors = models.TextField("Совет директоров", help_text="ФИО через запятую")
+
+    members_of_management_board = models.TextField("Члены правления", help_text="ФИО через запятую")
+
+    chief_accountant = models.CharField("Главный бухгалтер", max_length=100)
 
     # БИН & ИИН
     tax_id = models.CharField(
@@ -71,7 +108,21 @@ class Company(BaseModel):
         help_text="Введите ИИН если вы индивидуальный предприниматель, БИН в другом случае.",
     )
 
-    slug = models.SlugField(max_length=200, unique=True, blank=True)
+    # Контактные данные
+    address = models.CharField("Адрес компании", max_length=200)
+    phone_number = PhoneNumberField("Номер телефона компании", region="KZ")
+    fax = PhoneNumberField("Факс", region="KZ")
+    email = models.EmailField("Электронный адрес компании")
+    website = models.URLField(
+        "Веб-сайт компании", blank=True, help_text="Необязательно."
+    )
+
+    custodian_license = models.CharField("Кастодиан", max_length=100, null=True, blank=True, help_text="Необязательно")
+    broker_license = models.CharField("Брокеры-дилеры", max_length=100, help_text="Необязательно")
+
+    # СВЯЗИ
+
+    holdings = models.ManyToManyField("self", related_name="holdings", verbose_name="Холдинги", null=True, blank=True)
 
     # форма собственности
     ownership_type = models.ForeignKey(
@@ -90,15 +141,6 @@ class Company(BaseModel):
         help_text="Выберите тип бизнеса, которым занимается компания.",
     )
 
-    description = models.TextField(
-        "Описание деятельности компании", blank=True, help_text="Необязательно."
-    )
-    address = models.CharField("Адрес компании", max_length=200)
-    phone_number = PhoneNumberField("Номер телефона компании", region="KZ")
-    email = models.EmailField("Электронный адрес компании")
-    website = models.URLField(
-        "Веб-сайт компании", blank=True, help_text="Необязательно."
-    )
     # Фото, логотип компании
     image = models.ImageField(
         "Логотип или фото компании",
@@ -247,3 +289,5 @@ class Financials(BaseModel):
 
     def __str__(self):
         return f'Финансовый показатели субъекта "{self.company.name}"'
+
+

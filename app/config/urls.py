@@ -36,7 +36,6 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("", include("pages.urls")),
     path("enterprises/", include("enterprises.urls")),
-    path("products/", include("products.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/schema/redoc/",
