@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Продукты{% endblock title %}
+
+
+{% block content %}
+
+{# HEADER #}
+<div class="row">
+    <div class="col-md-8">
+        <h2 class="text-success">Продукция компаний:</h2>
+    </div>
+
+    <div class="col-auto">
+        {% if request.user.companies.exists %}
+            <a href="{% url 'product_new' %}" class="btn btn-primary"><i class="bi bi-cart-plus"></i> Добавить продукт</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row my-3">
+    {# FILTER BAR #}
+    <div class="col-md-2">
+        <form method="get">
+            {{ products.form|crispy }}
+            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Фильтр</button>
+        </form>
+    </div>
+
+    {# PRODUCTS #}
+    <div class="col-md">
+        <div class="row">
+            {% for product in products.qs %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card">
+                    <a href="{{ product.get_absolute_url }}">
+                        <img {% if product.image %} src="{{ product.image.url }}" {% else %} src="{% static 'images/no-image.jfif' %}" {% endif %} class="card-img-top" width="auto" height="200" alt="{{ product.name }} image">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+<!--                        <p class="card-text">{{ product.description|truncatechars:60 }}</p>-->
+                        <a href="{% url 'product_list' %}?price__lt={{ product.price|floatformat }}&type={{ product.type.pk }}" class="badge bg-light text-dark"><p class="card-text">Цена: {{ product.price|floatformat }}</p></a>
+                        <a href="{% url 'product_list' %}?type__product_category={{ product.type.product_category.pk }}" class="badge bg-light text-dark"><p class="card-text">{{ product.type.product_category }}</p></a>
+                        <a href="{% url 'product_list' %}?type={{ product.type.pk }}" class="badge bg-light text-dark"><p class="card-text">{{ product.type }}</p></a>
+                        <a href="{% url 'product_list' %}?company={{ product.company.pk }}" class="badge bg-light text-dark"><p class="card-text">{{ product.company }}</p></a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <div class="col">
+                    <p>Ничего нет</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock content %}

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}
+    {{ company }}
+{% endblock title %}
+
+{% block content %}
+
+  {# NAVIGATION #}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'company_list' %}">Список компаний</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ company }}</li>
+    </ol>
+  </nav>
+
+
+  <div class="container mt-3">
+    <div class="row">
+
+      {# COMPANY DESCRIPTION #}
+      <div class="col-md-8">
+        <div class="alert alert-primary" role="alert">
+          <h2>{{ company }}</h2>
+        </div>
+        <div class="card mb-3">
+<!--          <div class="card-header">-->
+<!--            <h5 class="card-title">{{ company.name }}</h5>-->
+<!--          </div>-->
+          <div class="card-body">
+            {% if company.image %}
+              <img src="{{ company.image.url }}" class="rounded float-start img-fluid img-thumbnail me-3" alt="{{ company.name }} image" width="200" height="200">
+            {% endif %}
+              <p class="card-text">{{ company.description }}</p>
+            </div>
+        </div>
+
+        {# FINANCIALS #}
+        {% with financials=company.financials_set.all %}
+
+          <div class="alert alert-info" role="alert">
+            {% if financials %} <h4>Финансовые показатели: </h4> {% endif %}
+          </div>
+
+          {% for finance in financials %}
+            <div class="card my-3">
+              <div class="card-body">
+                <h5 class="card-title">Отчет за год: {{ finance.year }}
+                  {% if company.user == request.user %}
+                    <div class="card-title position-absolute top-0 end-0 px-2 my-2">
+                      <a class="btn btn-sm btn-primary" href="{% url 'financials_update' company.slug finance.pk %}"><i class="bi bi-pencil"></i></a>
+                      <a class="btn btn-sm btn-danger" href="{% url 'financials_delete' company.slug finance.pk %}"><i class="bi bi-trash"></i></a>
+                    </div>
+                  {% endif %}
+                </h5>
+
+                <div class="row">
+                  <div class="col-6 col-md-3">
+                    <p class="mb-1"><strong>Общая выручка</strong></p>
+                    <div class="input-group">
+                      <span class="input-group-text" id="revenue-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Показывает общую сумму денег, которую компания заработала за определенный год"><i class="bi bi-patch-question"></i></span>
+                      <input type="text" class="form-control" value="{{ finance.revenue|default:'-' }}" readonly>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <p class="mb-1"><strong>Расходы</strong></p>
+                    <div class="input-group">
+                      <span class="input-group-text" id="expenses-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Все расходы, связанные с бизнесом, такие как зарплата сотрудников, аренда помещения, закупка оборудования и т.д."><i class="bi bi-patch-question"></i></span>
+                      <input type="text" class="form-control" value="{{ finance.expenses|default:'-' }}" readonly>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <p class="mb-1"><strong>Валовая прибыль</strong></p>
+                    <div class="input-group">
+                      <span class="input-group-text" id="gross-profit-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Показывает разницу между выручкой и себестоимостью товаров или услуг."><i class="bi bi-patch-question"></i></span>
+                      <input type="text" class="form-control" value="{{ finance.gross_profit|default:'-' }}" readonly>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <p class="mb-1"><strong>Чистая прибыль</strong></p>
+                    <div class="input-group">
+                      <span class="input-group-text" id="net-income-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Показывает сумму денег, которую компания заработала после вычета всех расходов."><i class="bi bi-patch-question"></i></span>
+                      <input type="text" class="form-control" value="{{ finance.net_income|default:'-' }}" readonly>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <p class="mb-1"><strong>Налоги</strong></p>
+                    <div class="input-group">
+                      <span class="input-group-text" id="net-income-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Сколько налогов компания заплатила за определенный период времени."><i class="bi bi-patch-question"></i></span>
+                      <input type="text" class="form-control" value="{{ finance.taxes|default:'-' }}" readonly>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <p class="mb-1"><strong>Дивиденды</strong></p>
+                    <div class="input-group">
+                      <span class="input-group-text" id="net-income-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Показывает сумму денег, которую компания выплатила своим акционерам"><i class="bi bi-patch-question"></i></span>
+                      <input type="text" class="form-control" value="{{ finance.dividends|default:'-' }}" readonly>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <p class="mb-1"><strong>Маржа</strong></p>
+                    <div class="input-group">
+                      <span class="input-group-text" id="net-income-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Показывает процентную прибыль компании, которая остается после вычета всех расходов от общей выручки."><i class="bi bi-patch-question"></i></span>
+                      <input type="text" class="form-control" value="{{ finance.margin|default:'-' }}" readonly>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <p class="mb-1"><strong>Дата</strong></p>
+                    <div class="input-group">
+                      <span class="input-group-text" id="net-income-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Дата прикрепления отчета"><i class="bi bi-patch-question"></i></span>
+                      <input type="text" class="form-control" value="{{ finance.created }}" readonly>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+
+        {% endwith %}
+        {# EMPLOYEES #}
+
+        {# MODAL DELETE #}
+        <div class="modal fade" id="deleteEmployeeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Удаление сотрудника</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body" id="modal-body-confirm"></div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="cancel-button">Нет</button>
+                <form>
+                  {% csrf_token %}
+                  <button type="button" id="delete-button" class="btn btn-danger">Да, удалить</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% with employees=company.employees.all %}
+        <div class="alert alert-success" role="alert">
+          {% if employees %} <h4>Сотрудники: </h4> {% endif %}
+        </div>
+
+        <ul class="list-group">
+        {% for employee in employees %}
+          <li class="list-group-item" id="{{ employee.pk }}">
+            <div class="row">
+              <div class="col-md-3">
+                <img {% if employee.image %} src="{{ employee.image.url }}" {% else %} src="{% static 'images/no-avatar.jfif' %}" {% endif %} class="mr-3 rounded-circle img-fluid" alt="{{ employee.first_name }} {{ employee.last_name }} Avatar">
+              </div>
+              <div class="col-md-9">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 class="mt-0 mb-1">{{ employee }}</h5>
+
+                  {% if request.user == company.user %}
+                  <div>
+                    {# EDIT EMPLOYEE #}
+                    <a href="{% url 'employee_update' company.slug employee.pk %}" class="btn btn-sm btn-primary">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    {# DELETE EMPLOYEE #}
+                    <button class="btn btn-sm btn-danger modal-button"
+                            type="button"
+                            data-company-slug="{{ company.slug }}"
+                            data-employee-pk="{{ employee.pk }}"
+                            data-company-name="{{ company }}"
+                            data-employee-full-name="{{ employee }}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteEmployeeModal">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                  {% endif %}
+                </div>
+
+                <p class="mb-1"><strong>Должность: </strong>{{ employee.position }}</p>
+                <p class="mb-1"><strong>Электронный адрес: </strong>{{ employee.email }}</p>
+                <p class="mb-1"><strong>Номер телефона: </strong>{{ employee.phone_number }}</p>
+                <p class="mb-1"><strong>Дата рождения: </strong>{{ employee.date_of_birth|default_if_none:"-" }}</p>
+                <p class="mb-0"><strong>Пол: </strong>{{ employee.get_gender_display|default:"-" }}</p>
+              </div>
+            </div>
+          </li>
+
+        {% endfor %}
+        </ul>
+        {% endwith %}
+
+      </div>
+
+      {# SIDEBAR INFO #}
+      <div class="col-md-4">
+        <div class="sticky-md-top">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Информация о компании</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><strong>БИН / ИИН:</strong> {{ company.tax_id }}</li>
+              <li class="list-group-item"><strong>Форма собственности:</strong> {{ company.ownership_type }}</li>
+              <li class="list-group-item"><strong>Тип бизнеса:</strong> {{ company.business_type }}</li>
+              <li class="list-group-item"><strong>Адрес:</strong> {{ company.address }}</li>
+              <li class="list-group-item"><strong>Телефон:</strong> {{ company.phone_number }}</li>
+              <li class="list-group-item"><strong>Email:</strong> {{ company.email }}</li>
+              {% if company.website %}
+                <li class="list-group-item"><strong>Веб-сайт:</strong> <a href="{{ company.website }}" target="_blank">{{ company.website }}</a></li>
+              {% endif %}
+            </ul>
+          </div>
+          {% if company.user == request.user %}
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title"><i class="bi bi-gear"></i> Редактирование</h5>
+            </div>
+            <div class="card-body">
+              <a href="{% url 'company_update' company.slug %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-building-gear"></i> Редактировать
+              </a>
+              <a href="{% url 'employee_new' company.slug %}" class="btn btn-sm bg-info" >
+                <i class="bi bi-person-fill-add"></i> Работники
+              </a>
+              <a href="{% url 'financials_new' company.slug %}" class="btn btn-success btn-sm">
+                <i class="bi bi-currency-exchange"></i> Финансы
+              </a>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block include_js %}
+  <script src="{% static 'js/employee_delete.js' %}" defer></script>
+  <script src="{% static 'js/finance_manage.js' %}" defer></script>
+{% endblock include_js %}
