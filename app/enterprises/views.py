@@ -1,5 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView
+from django.views.generic import (
+    CreateView,
+    ListView,
+    DetailView,
+    UpdateView,
+    DeleteView,
+)
 from django.views.generic.base import View, TemplateResponseMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Company, Employee, Financials
@@ -11,11 +17,29 @@ from django.db.models import Q
 from django.contrib.auth.mixins import UserPassesTestMixin
 from .filters import CompanyFilter
 
+# Рецензенты
+group_name = "reviewers"
 
-class CompanyOwnerTestMixin(UserPassesTestMixin):
+
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.mixins import UserPassesTestMixin
+
+
+class CompanyReviewerCuratorTestMixin(UserPassesTestMixin):
+    """
+    Миксин для проверки доступа к функциональности, связанной с компанией, для пользователей.
+    Пользователь должен быть либо куратором этой компании, либо принадлежать группе "reviewers".
+    """
+
     def test_func(self):
+        # Получаем компанию на основе slug в URL
         self.company = get_object_or_404(Company, slug=self.kwargs["slug"])
-        return self.company.user == self.request.user
+
+        # Проверяем, является ли пользователь куратором компании или принадлежит группе "reviewers"
+        return (
+            self.company.curators.filter(id=self.request.user.id).exists()
+            or self.request.user.groups.filter(name=group_name).exists()
+        )
 
 
 class CompanyCreateView(LoginRequiredMixin, CreateView):
@@ -35,31 +59,15 @@ class CompanyListView(TemplateResponseMixin, View):
     model = Company
     template_name = "enterprises/company_list.html"
 
-    # def company_list_filter(self, request, qs):
-    #     """Если фильтр есть, то выполнить фильтрацию"""
-    #     business_type = request.GET.get("business_type")
-    #     ownership_type = request.GET.get("ownership_type")
-    #     if business_type and ownership_type:
-    #         return qs.filter(business_type=business_type, ownership_type=ownership_type)
-    #     if business_type:
-    #         return qs.filter(business_type=business_type)
-    #     if ownership_type:
-    #         return qs.filter(ownership_type=ownership_type)
-    #
-    #     else:
-    #         return qs
-
     def get(self, request):
-        # qs = Company.objects.all()
-        # company_filter_form = CompanyFilterForm(data=request.GET)
-        # company_list = self.company_list_filter(request, qs)
-
-        # one string of django-filter, but many without
         f = CompanyFilter(request.GET, queryset=Company.objects.all())
 
-
         return self.render_to_response(
-            {"company_list": "company_list", "company_filter_form": "company_filter_form", "filter": f}
+            {
+                "company_list": "company_list",
+                "company_filter_form": "company_filter_form",
+                "filter": f,
+            }
         )
 
 
@@ -68,8 +76,20 @@ class CompanyDetailView(DetailView):
     template_name = "enterprises/company_detail.html"
     context_object_name = "company"
 
+    def get_queryset(self):
+        return super().get_queryset().select_related().prefetch_related()
 
-class CompanyUpdateView(LoginRequiredMixin, CompanyOwnerTestMixin, UpdateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["is_curator"] = self.object.curators.filter(
+            id=self.request.user.id
+        ).exists()
+        return context
+
+
+class CompanyUpdateView(
+    LoginRequiredMixin, CompanyReviewerCuratorTestMixin, UpdateView
+):
     template_name = "enterprises/company_update.html"
     form_class = CompanyForm
 
@@ -83,15 +103,18 @@ class CompanyUpdateView(LoginRequiredMixin, CompanyOwnerTestMixin, UpdateView):
         return reverse_lazy("company_detail", kwargs={"slug": self.object.slug})
 
 
-class CompanyDeleteView(LoginRequiredMixin, CompanyOwnerTestMixin, DeleteView):
+class CompanyDeleteView(
+    LoginRequiredMixin, CompanyReviewerCuratorTestMixin, DeleteView
+):
     model = Company
     success_url = reverse_lazy("company_list")
     context_object_name = "company"
     template_name = "enterprises/company_delete.html"
 
 
-
-class EmployeeCreateView(LoginRequiredMixin, CompanyOwnerTestMixin, CreateView):
+class EmployeeCreateView(
+    LoginRequiredMixin, CompanyReviewerCuratorTestMixin, CreateView
+):
     """Add company employee"""
 
     template_name = "enterprises/employee_new.html"
@@ -113,7 +136,9 @@ class EmployeeCreateView(LoginRequiredMixin, CompanyOwnerTestMixin, CreateView):
         return reverse_lazy("company_detail", args=[self.company.slug])
 
 
-class EmployeeUpdateView(LoginRequiredMixin, CompanyOwnerTestMixin, UpdateView):
+class EmployeeUpdateView(
+    LoginRequiredMixin, CompanyReviewerCuratorTestMixin, UpdateView
+):
     form_class = EmployeeForm
     pk_url_kwarg = "pk"
     context_object_name = "employee"
@@ -140,7 +165,9 @@ def employee_delete(request, slug, pk):
         return JsonResponse({"status": "success"})
 
 
-class FinancialsCreateView(LoginRequiredMixin, CompanyOwnerTestMixin, CreateView):
+class FinancialsCreateView(
+    LoginRequiredMixin, CompanyReviewerCuratorTestMixin, CreateView
+):
     model = Financials
     form_class = FinancialsForm
     template_name = "enterprises/financials_new.html"
@@ -158,7 +185,9 @@ class FinancialsCreateView(LoginRequiredMixin, CompanyOwnerTestMixin, CreateView
         return self.company.get_absolute_url()
 
 
-class FinancialsUpdateView(LoginRequiredMixin, CompanyOwnerTestMixin, UpdateView):
+class FinancialsUpdateView(
+    LoginRequiredMixin, CompanyReviewerCuratorTestMixin, UpdateView
+):
     model = Financials
     form_class = FinancialsForm
     pk_url_kwarg = "pk"
@@ -172,7 +201,10 @@ class FinancialsUpdateView(LoginRequiredMixin, CompanyOwnerTestMixin, UpdateView
     def get_success_url(self):
         return self.company.get_absolute_url()
 
-class FinancialsDeleteView(LoginRequiredMixin, CompanyOwnerTestMixin, DeleteView):
+
+class FinancialsDeleteView(
+    LoginRequiredMixin, CompanyReviewerCuratorTestMixin, DeleteView
+):
     model = Financials
     pk_url_kwarg = "pk"
     template_name = "enterprises/financials_delete.html"
@@ -184,6 +216,7 @@ class FinancialsDeleteView(LoginRequiredMixin, CompanyOwnerTestMixin, DeleteView
 
     def get_success_url(self):
         return self.company.get_absolute_url()
+
 
 class CompanySearchView(ListView):
     model = Company

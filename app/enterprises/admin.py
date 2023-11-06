@@ -7,6 +7,7 @@ from .models import *
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
+    raw_id_fields = ["curators"]
 
 
 admin.site.register(BusinessType)
