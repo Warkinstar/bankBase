@@ -61,7 +61,7 @@
         </div>
 
         {# FINANCIALS #}
-        {% if user|has_group:"reviewer" or is_curator %}
+        {% if user|has_group:"reviewers" or is_curator %}
         {% with financials=company.financials_set.all %}
 
           <div class="alert alert-info" role="alert">
@@ -182,7 +182,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <h5 class="mt-0 mb-1">{{ employee }}</h5>
 
-                  {% if user|has_group:"reviewer" or is_curator %}
+                  {% if user|has_group:"reviewers" or is_curator %}
                   <div>
                     {# EDIT EMPLOYEE #}
                     <a href="{% url 'employee_update' company.slug employee.pk %}" class="btn btn-sm btn-primary">
@@ -238,7 +238,7 @@
               {% endif %}
             </ul>
           </div>
-          {% if user|has_group:"reviewer" or is_curator %}
+          {% if user|has_group:"reviewers" or is_curator %}
           <div class="card">
             <div class="card-header">
               <h5 class="card-title"><i class="bi bi-gear"></i> Редактирование</h5>

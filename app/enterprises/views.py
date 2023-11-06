@@ -96,7 +96,7 @@ class CompanyUpdateView(
     def get_object(self, queryset=None):
         """Получить объект если автор request.user"""
         slug = self.kwargs["slug"]
-        obj = get_object_or_404(Company, slug=slug, user=self.request.user)
+        obj = get_object_or_404(Company, slug=slug)
         return obj
 
     def get_success_url(self):

@@ -10,7 +10,7 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {"fields": ("last_name", "first_name", "middle_name", "email")}),
     ) + UserAdmin.add_fieldsets
-    list_display = ["first_name", "last_name", "date_joined", "is_active"]
+    list_display = ["email", "first_name", "last_name", "date_joined", "is_active"]
     list_filter = ["first_name", "last_name", "date_joined"]
 
 
