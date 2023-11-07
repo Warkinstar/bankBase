@@ -1,9 +1,9 @@
 # bankBase
 
 Веб-приложение на Django для централизованного учета информации о
-участниках финансового рынка. Веб-приложение должно включает в себя как фронтенд, так и
-бэкенд, а также развернуто с использованием Docker, включая базу данных postgres
-и Nginx.
+участниках финансового рынка. Веб-приложение включает в себя как фронтенд на основе стилей bootstrap, так и
+бэкенд, а также использован Docker, включая базу данных postgres
+и прокси-сервер Nginx.
 
 # Установка
 ## Devolopment
@@ -29,7 +29,7 @@ docker-compose exec web python manage.py createsuperuser
 ```sh
 docker-compose -f docker-compose.prod.yml up -d --build
 ```
-Далее проведите миграцию, сборку статических файлов и создание суперпользователя
+Далее проведите миграцию, сборку статических файлов и создание суперпользователя:
 ```sh
 docker-compose -f docker-compose.prod.yml exec web python manage.py migrate
 
@@ -40,7 +40,7 @@ docker-compose -f docker-compose.prod.yml exec web python manage.py createsuperu
 
 Проверьте по адресу [http://localhost:1337](http://localhost:1337). Папки не монтированы. Чтобы применять изменения необходимо перестравить образ --build.
 
-Если есть проблемы с портом nginx, измените в файле docker-compose.prod.yml строку
+Если есть проблемы с портом nginx, измените в файле docker-compose.prod.yml строку и перестройте образ:
 ```
 ports:
       - 1137:80
@@ -52,34 +52,37 @@ ports:
 ```
 
 ## Использование
-* Добавлять организации могут все зарегистрированные пользователи
+* Добавлять организации могут все зарегистрированные пользователи.
 * Обновлять/Удалять органзиции могут лишь:
-1. Пользователи-ревьюеры состоящие в группе "reviewers" (без ковычек) 
-1. Пользователи-кураторы организации которые входят в список company.curators (ManyToMany). Добавить их туда можно в панели-администратора модели Company.
-* Ревьюры имеют доступ к просмотру финансовых данных и редактированию всех компаний
-* Кураторы имеют доступ к просмотру финансовых данных и редактированию тех компаний, кураторами, которых являются
+1. Пользователи-ревьюеры состоящие в группе "reviewers" (без ковычек) .
+1. Пользователи-кураторы организации которые входят в список company.curators (ManyToMany). Добавить их туда можно в панели-администратора модели Company(Enterprises).
+* Ревьюры имеют доступ к просмотру финансовых данных и редактированию всех компаний.
+* Кураторы имеют доступ к просмотру финансовых данных и редактированию тех компаний, кураторами, которых являются.
 
 ## Скриншоты
-* Домашняя страница
+* Домашняя страница:
+
 ![HomePage](https://raw.githubusercontent.com/Warkinstar/screenshots/main/bankBase/home.png)
 
-* Добавление организации
+* Добавление организации:
+
 ![Create Company](https://raw.githubusercontent.com/Warkinstar/screenshots/main/bankBase/company_new.png)
 
-* Прикрепление куратора к организации через админ панель редакторования организации
+* Прикрепление куратора к организации через админ панель редакторования организации:
+
 ![Curators](https://raw.githubusercontent.com/Warkinstar/screenshots/main/bankBase/curators.png)
 
-* Слева обычный пользователь и справа куратор (пользователь не видит фин. данные, а куратор их видит и может редактоировать)
+* Слева обычный пользователь и справа куратор (пользователь не видит фин. данные, а куратор их видит и может редактоировать):
 
 ![User and Curator](https://raw.githubusercontent.com/Warkinstar/screenshots/main/bankBase/user_and_curator.png)
 
-* Создание группы "reviewers" и добавление пользователя в неё
+* Создание группы "reviewers" и добавление пользователя в неё:
 
 ![Create Group](https://raw.githubusercontent.com/Warkinstar/screenshots/main/bankBase/create_group.png)
 ![Add user to group](https://raw.githubusercontent.com/Warkinstar/screenshots/main/bankBase/group_add.png)
 
 
-* Когда ты ревьюер ты можешь редактировать и просматривать все данные организаций, куратором которых ты не являешься.
+* Когда вы ревьюер вы можешь редактировать и просматривать все данные организаций, куратором которых вы не являетесь:
 
 ![When you reviewer](https://raw.githubusercontent.com/Warkinstar/screenshots/main/bankBase/when_you_reviewer.png)
 
