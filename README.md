@@ -71,7 +71,7 @@ ports:
 
 * Слева обычный пользователь и справа куратор (пользователь не видит фин. данные, а куратор их видит и может редактоировать)
 
-![User and Curator] (https://raw.githubusercontent.com/Warkinstar/screenshots/main/bankBase/user_and_curator.png)
+![User and Curator](https://raw.githubusercontent.com/Warkinstar/screenshots/main/bankBase/user_and_curator.png)
 
 * Создание группы "reviewers" и добавление пользователя в неё
 
